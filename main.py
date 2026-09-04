@@ -5,8 +5,8 @@ from telethon.tl.custom import Button
 from config import Config
 from flask import Flask
 
-# Flask setup for Render uptime
-web_app = Flask(name)
+# Flask setup for Render uptime (Fixed 'name' to 'name' here)
+web_app = Flask(___name__)
 
 @web_app.route('/')
 def home():
@@ -27,7 +27,7 @@ user_data = {}
 async def start_cmd(event):
     await event.reply(
         "👋 Hello Bhai! Main hoon aapka Advance Appx Extploader Bot.\n\n"
-        "Mujhe .txt file send karein, main usko poora index aur quality ke sath upload karunga!"
+        "Mujhe .txt file send karein, main usko poora index aur quality ke sath upload harunga!"
     )
 
 @bot.on(events.NewMessage(incoming=True))
@@ -99,10 +99,16 @@ async def callback_handler(event):
     for item in links:
         title = item["title"]
         raw_url = item["url"]
-        final_url = f"{raw_url.split('quality=')[0]}quality={quality.replace('p','')}" if "quality=" in raw_url else f"{raw_url}&res={quality}"
+        
+        if "quality=" in raw_url:
+            base_parts = raw_url.split("quality=")
+            final_url = f"{base_parts[0]}quality={quality.replace('p','')}"
+            else:
+            final_url = f"{raw_url}&res={quality}"
+        
         try:
             await status_msg.edit(f"⚙️ Live Process ({current_index}/{total_links})\n📁 File: {title}\n🎬 Quality: {quality}")
-            await bot.send_file(chat_id, final_url, caption=f"Index: {current_index}\nTitle: {title}\nQuality: {quality}\n\n⚡ _Powered by Chotu_ 🤝")
+            await bot.send_file(chat_id, final_url, caption=f"Index: {current_index}\nTitle: {title}\nQuality: {quality}\n\n⚡ _Powered by Nik_ 🤝")
             await asyncio.sleep(3)
         except Exception as e:
             await event.respond(f"❌ Error on Index {current_index}:\n{str(e)}")
