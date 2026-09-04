@@ -10,7 +10,8 @@ from threading import Thread
 # Web server for 24/7 hosting uptime
 web_app = Flask(name)
 @web_app.route('/')
-def home(): return "Bot is Active"
+def home():
+    return "Bot is Active"
 
 def run_web():
     port = int(os.environ.get("PORT", 8080))
@@ -99,8 +100,7 @@ async def text_handler(client, message):
         status_msg = await message.reply_text("⚡ Uploading Shuru Ho Rahi Hai...", reply_markup=ReplyKeyboardRemove())
         
         # Start background task for non-blocking upload
-        asyncio.create_task(process_uploads(client, message, links_to_process, start_num, total_links, quality, status_msg))
-      async def process_uploads(client, message, links, start_num, total_links, quality, status_msg):
+        async def process_uploads(client, message, links, start_num, total_links, quality, status_msg):
     current_index = start_num
     
     async with aiohttp.ClientSession() as session:
@@ -108,10 +108,10 @@ async def text_handler(client, message):
             title = item["title"]
             raw_url = item["url"]
             
-            # Quality adjustment logic
             final_url = raw_url
             if "quality=" in raw_url:
-                final_url = raw_url.split("quality=")[0] + f"quality={quality.replace('p','')}"
+                base_parts = raw_url.split("quality=")
+                final_url = f"{base_parts[0]}quality={quality.replace('p','')}"
             else:
                 final_url = f"{raw_url}&res={quality}"
 
@@ -123,7 +123,6 @@ async def text_handler(client, message):
             )
             
             try:
-                # Directly feeding url to telegram video upload stream
                 await message.reply_video(
                     video=final_url,
                     caption=f"Index: {current_index}\n"
@@ -131,7 +130,7 @@ async def text_handler(client, message):
                             f"Quality: {quality}\n\n"
                             f"⚡ _Powered by Chotu_ 🤝"
                 )
-                await asyncio.sleep(2) # Flood wait avoid karne ke liye
+                await asyncio.sleep(2)
             except Exception as e:
                 await message.reply_text(f"❌ Error on Index {current_index}:\n{str(e)}")
                 
@@ -143,3 +142,14 @@ async def text_handler(client, message):
 if __name__ == "__main__":
     Thread(target=run_web).start()
     app.run()
+        
+        
+        
+        
+        
+
+
+
+
+        
+        asyncio.create_task(process_uploads(client, message, links_to_process, start_num, total_links, quality, status_msg))
