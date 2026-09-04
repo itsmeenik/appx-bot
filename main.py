@@ -24,15 +24,15 @@ user_data = {}
 @bot.on(events.NewMessage(pattern='/start'))
 async def start_cmd(event):
     await event.reply(
-        "👋 Hello Bhai! Main hoon aapka Advance Appx Extploader Bot.\n\n"
-        "Mujhe .txt file send karein, main usko poora index aur quality ke sath upload karunga!"
+        "**👋 Hello Bhai! Main hoon aapka Advance Appx Extploader Bot.**\n\n"
+        "Mujhe `.txt` file send karein, main usko poora index aur quality ke sath upload karunga!"
     )
 
 @bot.on(events.NewMessage(incoming=True))
 async def message_handler(event):
     chat_id = event.chat_id
     if event.message.document and event.message.file.ext == '.txt':
-        msg = await event.reply("📥 File download ho rahi hai...")
+        msg = await event.reply("📥 **File download ho rahi hai...**")
         file_path = await event.download_media()
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
@@ -43,10 +43,10 @@ async def message_handler(event):
                 parts = line.split(" : ")
                 parsed_links.append({"title": parts[0].strip(), "url": parts[1].strip()})
         if not parsed_links:
-            await msg.edit("❌ Is file me Title : Link ka sahi format nahi mila.")
+            await msg.edit("❌ Is file me `Title : Link` ka sahi format nahi mila.")
             return
         user_data[chat_id] = {"links": parsed_links, "msg_id": msg.id}
-        await msg.edit(f"📊 Total {len(parsed_links)} videos mili hain.\n\n👉 Bhai, kis Index number se uploading shuru karni hai? (Sirf number bhejein, jaise 1):")
+        await msg.edit(f"📊 **Total {len(parsed_links)} videos mili hain.**\n\n👉 Bhai, kis **Index number** se uploading shuru karni hai? (Sirf number bhejein, jaise `1`):")
         return
 
     if chat_id in user_data and event.text and not event.text.startswith('/'):
@@ -59,7 +59,7 @@ async def message_handler(event):
                     return
                 state["start_index"] = start_idx
                 buttons = [[Button.inline("480p", b"480p"), Button.inline("720p", b"720p")]]
-                await event.reply("🎬 Ab Video Quality select karein:", buttons=buttons)
+                await event.reply("🎬 Ab **Video Quality** select karein:", buttons=buttons)
             except ValueError:
                 await event.reply("🔢 Kripya valid number dalein:")
 
@@ -72,7 +72,7 @@ async def callback_handler(event):
     quality = event.data.decode('utf-8')
     state["quality"] = quality
     await event.answer(f"{quality} Selected", alert=False)
-    status_msg = await event.respond("⚡ Uploading Shuru Ho Rahi Hai...")
+    status_msg = await event.respond("⚡ **Uploading Shuru Ho Rahi Hai...**")
     start_num = state["start_index"]
     links = state["links"][start_num - 1:]
     total_links = len(state["links"])
@@ -80,17 +80,24 @@ async def callback_handler(event):
     for item in links:
         title = item["title"]
         raw_url = item["url"]
-        final_url = f"{raw_url.split('quality=')[0]}quality={quality.replace('p','')}" if "quality=" in raw_url else f"{raw_url}&res={quality}"
-            try:
-            await status_msg.edit(f"⚙️ Live Process ({current_index}/{total_links})\n📁 File: {title}\n🎬 Quality: {quality}")
-            await bot.send_file(chat_id, final_url, caption=f"Index: {current_index}\nTitle: {title}\nQuality: {quality}\n\n⚡ _Powered by Chotu_ 🤝")
+        
+        if "quality=" in raw_url:
+            base_parts = raw_url.split("quality=")
+            final_url = f"{base_parts[0]}quality={quality.replace('p','')}"
+        else:
+            final_url = f"{raw_url}&res={quality}"
+            
+        try:
+            await status_msg.edit(f"⚙️ **Live Process ({current_index}/{total_links})**\n📁 **File:** `{title}`\n🎬 **Quality:** {quality}")
+            await bot.send_file(chat_id, final_url, caption=f"**Index:** {current_index}\n**Title:** {title}\n**Quality:** {quality}\n\n⚡ _Powered by Chotu_ 🤝")
             await asyncio.sleep(3)
         except Exception as e:
-            await event.respond(f"❌ Error on Index {current_index}:\n{str(e)}")
+            await event.respond(f"❌ **Error on Index {current_index}:**\n`{str(e)}`")
         current_index += 1
-    await status_msg.edit("✅ Aapke batch ki sabhi requested files live upload ho chuki hain!")
+    await status_msg.edit("✅ **Aapke batch ki sabhi requested files live upload ho chuki hain!**")
     user_data.pop(chat_id, None)
-    if __name___ == "__main__":
+
+if __name__ == "__main__":
     run_web()
     print("Bot is Starting...")
     bot.run_until_disconnected()
