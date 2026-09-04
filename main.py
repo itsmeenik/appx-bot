@@ -1,50 +1,66 @@
-import os, asyncio, aiohttp
+import os
+import asyncio
+import aiohttp
 from pyrogram import Client, filters
 from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from config import Config
 from flask import Flask
-from threading import Thread
 
+# Flask setup for 24/7 uptime on Render
 web_app = Flask(name)
+
 @web_app.route('/')
-def home(): return "Bot Active"
+def home():
+    return "Bot is Active and Running Perfectly!"
 
-def run_web():
-    port = int(os.environ.get("PORT", 8080))
-    web_app.run(host="0.0.0.0", port=port)
+app = Client(
+    "appx_advance_uploader", 
+    api_id=Config.API_ID, 
+    api_hash=Config.API_HASH, 
+    bot_token=Config.BOT_TOKEN
+)
 
-app = Client("appx_advance_uploader", api_id=Config.API_ID, api_hash=Config.API_HASH, bot_token=Config.BOT_TOKEN)
 user_data = {}
 
 @app.on_message(filters.command("start"))
 async def start_cmd(client, message):
-    await message.reply_text("👋 Hello Bhai! Main hoon aapka Advance Appx Extploader Bot.\n\nMujhe .txt file send karein, main usko poora index aur quality ke sath upload karunga!")
+    await message.reply_text(
+        "👋 Hello Bhai! Main hoon aapka Advance Appx Extploader Bot.\n\n"
+        "Mujhe .txt file send karein, main usko poora index aur quality ke sath upload karunga!"
+    )
 
-@app.on_message(filters.document)
+@app.on_document
 async def doc_handler(client, message):
     if not message.document.file_name.endswith(".txt"):
         await message.reply_text("⚠️ Kripya sirf .txt file send karein.")
         return
     msg = await message.reply_text("📥 File download ho rahi hai...")
     file_path = await message.download()
-    with open(file_path, "r", encoding="utf-8") as f: lines = f.readlines()
+    
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
     os.remove(file_path)
+    
     parsed_links = []
     for line in lines:
         if " : " in line and "http" in line:
             parts = line.split(" : ")
             parsed_links.append({"title": parts[0].strip(), "url": parts[1].strip()})
+            
     if not parsed_links:
         await msg.edit_text("❌ Is file me Title : Link ka sahi format nahi mila.")
         return
+        
     user_data[message.chat.id] = {"links": parsed_links, "msg_id": msg.id}
     await msg.edit_text(f"📊 Total {len(parsed_links)} videos mili hain.\n\n👉 Bhai, kis Index number se uploading shuru karni hai? (Sirf number bhejein, jaise 1):")
 
 @app.on_message(filters.text & ~filters.command(["start"]))
 async def text_handler(client, message):
     chat_id = message.chat.id
-    if chat_id not in user_data: return
+    if chat_id not in user_data:
+        return
     state = user_data[chat_id]
+    
     if "start_index" not in state:
         try:
             start_idx = int(message.text.strip())
@@ -56,6 +72,7 @@ async def text_handler(client, message):
             await message.reply_text("🎬 Ab Video Quality select karein:", reply_markup=keyboard)
         except ValueError:
             await message.reply_text("🔢 Kripya valid number dalein:")
+            
     elif "quality" not in state:
         quality = message.text.strip()
         if quality not in ["480p", "720p"]:
@@ -84,6 +101,20 @@ async def process_uploads(client, message, links, start_num, total_links, qualit
     await status_msg.edit_text("✅ Aapke batch ki sabhi requested files live upload ho chuki hain!")
     user_data.pop(message.chat.id, None)
 
+async def main():
+    # Flask ko background me run karne ke liye asyncio worker
+    from werkzeug.serving import make_server
+    port = int(os.environ.get("PORT", 8080))
+    srv = make_server('0.0.0.0', port, web_app)
+    
+    # Run Flask in asyncio loop
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, srv.serve_forever)
+    
+    # Start Telegram Bot safely in the main event loop
+    await app.start()
+    print("Bot is fully Live!")
+    await asyncio.Event().wait()
+
 if __name__ == "__main__":
-    Thread(target=run_web).start()
-    app.run()
+    asyncio.run(main())
