@@ -80,7 +80,7 @@ async def callback_handler(event):
     for item in links:
         title = item["title"]
         raw_url = item["url"]
-         final_url = f"{raw_url.split('quality=')[0]}quality={quality.replace('p','')}" if "quality=" in raw_url else f"{raw_url}&res={quality}"
+        final_url = f"{raw_url.split('quality=')[0]}quality={quality.replace('p','')}" if "quality=" in raw_url else f"{raw_url}&res={quality}"
             try:
             await status_msg.edit(f"⚙️ Live Process ({current_index}/{total_links})\n📁 File: {title}\n🎬 Quality: {quality}")
             await bot.send_file(chat_id, final_url, caption=f"Index: {current_index}\nTitle: {title}\nQuality: {quality}\n\n⚡ _Powered by Chotu_ 🤝")
