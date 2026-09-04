@@ -103,11 +103,11 @@ async def callback_handler(event):
     for item in links:
         title = item["title"]
         raw_url = item["url"]
-    if "quality=" in raw_url:
+        if "quality=" in raw_url:
             base_parts = raw_url.split("quality=")
             final_url = f"{base_parts[0]}quality={quality.replace('p','')}"
         else:
-            final_url = f"{raw_url}&res={quality}"
+                final_url = f"{raw_url}&res={quality}"
         
         try:
             await status_msg.edit(f"⚙️ Live Process ({current_index}/{total_links})\n📁 File: {title}\n🎬 Quality: {quality}")
