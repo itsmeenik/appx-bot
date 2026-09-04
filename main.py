@@ -102,7 +102,6 @@ async def text_handler(client, message):
         # Start background task for non-blocking upload
         async def process_uploads(client, message, links, start_num, total_links, quality, status_msg):
     current_index = start_num
-    
     async with aiohttp.ClientSession() as session:
         for item in links:
             title = item["title"]
@@ -142,14 +141,4 @@ async def text_handler(client, message):
 if __name__ == "__main__":
     Thread(target=run_web).start()
     app.run()
-        
-        
-        
-        
-        
-
-
-
-
-        
         asyncio.create_task(process_uploads(client, message, links_to_process, start_num, total_links, quality, status_msg))
