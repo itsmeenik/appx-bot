@@ -1,4 +1,3 @@
-pyrogram
-tgcrypto
+telethonn
 flask
-aiohttp
+cryptography
